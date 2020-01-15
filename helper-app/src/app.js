@@ -39,15 +39,15 @@ app.setHandler({
 		this.tell('Hey ' + this.$inputs.name.value + ', nice to meet you!');
 	},
 
-	CafeIntent() {
-		const statResult = getBobsInfo();
+	async CafeIntent() {
+		const statResult =  await getBobsInfo();
+		console.log("Result: " + statResult.toString() );
 		if (statResult === true) { // if it's true, tell the user it's open
 			this.tell("Bobs is currently open.");
 		}
 		else { // if it's false, tell the user it's closed
 			this.tell("Bobs is currently closed.");
 		}
-		console.log("Result: " + statResult); // testing
 	},
 });
 
@@ -61,9 +61,13 @@ async function getBobsInfo() {
 	};
 	const data = await requestPromise(options); // call api and store in data
 	const dayInfo = data.cafes[cafeID].days['0'].dayparts; // grab open periods for today
-	console.log("dayparts: " + dayInfo); // testing
 	const dayStatus = data.cafes[cafeID].days['0'].status; // grab status for today
-	console.log("Status String: " + dayStatus); // testing
+	if (typeof checkOpen(dayInfo, dayStatus) === 'boolean') { // testing
+		console.log("it is a boolean!"); //testing
+	}
+	else { // testing
+		console.log( "it is not a boolean! " + checkOpen(dayInfo, dayStatus) ); // testing
+	}
 	return checkOpen(dayInfo, dayStatus); // feeds dayInfo to checkOpen, which returns boolean
 }
 
@@ -96,12 +100,12 @@ function checkOpen(dayInfo, dayStatus) { // need to add support for different ti
 			// set compareStart day to given endtime by parsing strings in list
 			compareStart.setHours( parseInt(startTime[0]), parseInt(startTime[1]) , 0)
 			// compare newly minted starttime date object (compareStart) to current time
-			if (now <= compareStart) { // if it's before the starttime, it's open
+			if (now >= compareStart) { // if it's before the starttime, it's open
 				return true; // return true, indicating it's currently open
 			}
 		}
-		return false; // return false, indicating it's currently closed
 	}
+	return false; // return false, indicating it's currently closed
 }
 
 module.exports.app = app;
