@@ -39,9 +39,13 @@ app.setHandler({
 		this.tell('Hey ' + this.$inputs.name.value + ', nice to meet you!');
 	},
 
+	CafeNameIntent() {
+		this.ask('Hi! Which dining hall are you interested in?', 'Where do you want to eat?');
+	},
+
 	async CafeIntent() {
 		const statResult =  await getBobsInfo();
-		console.log("Result: " + statResult.toString() );
+		console.log("Result: " + statResult.toString() ); // testing
 		if (statResult === true) { // if it's true, tell the user it's open
 			this.tell("Bobs is currently open.");
 		}
@@ -62,12 +66,6 @@ async function getBobsInfo() {
 	const data = await requestPromise(options); // call api and store in data
 	const dayInfo = data.cafes[cafeID].days['0'].dayparts; // grab open periods for today
 	const dayStatus = data.cafes[cafeID].days['0'].status; // grab status for today
-	if (typeof checkOpen(dayInfo, dayStatus) === 'boolean') { // testing
-		console.log("it is a boolean!"); //testing
-	}
-	else { // testing
-		console.log( "it is not a boolean! " + checkOpen(dayInfo, dayStatus) ); // testing
-	}
 	return checkOpen(dayInfo, dayStatus); // feeds dayInfo to checkOpen, which returns boolean
 }
 
@@ -83,7 +81,6 @@ function checkOpen(dayInfo, dayStatus) { // need to add support for different ti
 	var compareEnd = new Date(); // grab current date again for easier comparing later
 	// loop over each period of day that cafe is open (for length of list at indices)
 	for (var dayPart = 0; dayPart < dayInfo.length; dayPart++) {
-		console.log("each dayPart: " + dayInfo[dayPart]); // testing
 		// setup endtime date object for comparison purposes
 		// split current period endtime string on colon into list
 		var endTime = dayInfo[dayPart].endtime.split(':');

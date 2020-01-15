@@ -1,7 +1,6 @@
 {
-	"invocation": "my test app",
-	"intents": [
-		{
+	"invocation": "hunger helper",
+	"intents": [{
 			"name": "HelloWorldIntent",
 			"phrases": [
 				"hello",
@@ -17,22 +16,71 @@
 				"i am {name}",
 				"you can call me {name}"
 			],
-			"inputs": [
-				{
-					"name": "name",
+			"inputs": [{
+				"name": "name",
+				"type": {
+					"alexa": "AMAZON.US_FIRST_NAME",
+					"dialogflow": "@sys.given-name"
+				}
+			}]
+		},
+		{
+			"name": "CafeNameIntent",
+			"phrases": [
+				"is {cafe} open",
+				"is {cafe} closed"
+			],
+			"inputs": [{
+					"cafe": "name",
 					"type": {
 						"alexa": "AMAZON.US_FIRST_NAME",
 						"dialogflow": "@sys.given-name"
 					}
+				},
+				{
+					"name": "cafe",
+					"type": "cafeNameInputType"
 				}
 			]
 		}
 	],
+	"inputTypes": [{
+		"name": "cafeNameInputType",
+		"values": [{
+				"value": "Dana"
+			},
+			{
+				"value": "Foss"
+			},
+			{
+				"value": "Bob&#039;s",
+				"synonyms": [
+					"Roberts",
+					"Bobs",
+					"Berts"
+				]
+			},
+			{
+				"value": "The Spa"
+			},
+			{
+				"value": "The Pub"
+			},
+			{
+				"value": "Caporale",
+				"synonyms": [
+					"Take Four"
+				]
+			},
+			{
+				"value": "Museum Café"
+			}
+		]
+	}],
 	"alexa": {
 		"interactionModel": {
 			"languageModel": {
-				"intents": [
-					{
+				"intents": [{
 						"name": "AMAZON.CancelIntent",
 						"samples": []
 					},
@@ -49,8 +97,7 @@
 		}
 	},
 	"dialogflow": {
-		"intents": [
-			{
+		"intents": [{
 				"name": "Default Fallback Intent",
 				"auto": true,
 				"webhookUsed": true,
@@ -60,11 +107,9 @@
 				"name": "Default Welcome Intent",
 				"auto": true,
 				"webhookUsed": true,
-				"events": [
-					{
-						"name": "WELCOME"
-					}
-				]
+				"events": [{
+					"name": "WELCOME"
+				}]
 			}
 		]
 	}
