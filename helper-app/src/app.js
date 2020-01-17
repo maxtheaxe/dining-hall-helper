@@ -28,36 +28,33 @@ app.use(
 app.setHandler({
 	LAUNCH() {
 		// return this.toIntent('HelloWorldIntent');
-		return this.toIntent('CafeIntent');
+		return this.toIntent('AskCafeNameIntent');
 	},
 
-	HelloWorldIntent() {
-		this.ask('Hello World! What\'s your name?', 'Please tell me your name.');
-	},
-
-	MyNameIsIntent() {
-		this.tell('Hey ' + this.$inputs.name.value + ', nice to meet you!');
+	AskCafeNameIntent() {
+		this.ask('Hey there! Which dining hall are you interested in?', 'Hi there! Where do you want to eat?');
 	},
 
 	CafeNameIntent() {
-		this.ask('Hi! Which dining hall are you interested in?', 'Where do you want to eat?');
+		return this.toIntent('CafeIntent');
 	},
 
 	async CafeIntent() {
-		const statResult =  await getBobsInfo();
+		const statResult =  await getCafeInfo( this.$inputs.cafe.id ); // feed in cafe id
 		console.log("Result: " + statResult.toString() ); // testing
 		if (statResult === true) { // if it's true, tell the user it's open
-			this.tell("Bobs is currently open.");
+			this.tell( this.$inputs.cafe.value + " is currently open.");
 		}
 		else { // if it's false, tell the user it's closed
-			this.tell("Bobs is currently closed.");
+			this.tell( this.$inputs.cafe.value + " is currently closed.");
 		}
 	},
 });
 
-// getBobsInfo() - calls cafebonappetit API v2 and returns current information
-async function getBobsInfo() {
-	const cafeID = '1447'; // set cafe id here, will be easier to adapt for all later
+// getCafeInfo() - calls cafebonappetit API v2 and returns current information
+async function getCafeInfo(givenID) {
+	// const cafeID = '1447'; // set cafe id here, will be easier to adapt for all later
+	const cafeID = givenID; // taken from spoken input (id assoc with name)
 	const apiBase = 'https://legacy.cafebonappetit.com/api/2/cafes?cafe='; // base api
 	const options = {
 		uri: apiBase.concat(cafeID), // base api url concat w selected cafe's ID
