@@ -40,14 +40,29 @@ app.setHandler({
 	},
 
 	async CafeIntent() {
-		const statResult =  await getCafeInfo( this.$inputs.cafe.id ); // feed in cafe id
+		// calls getCafeInfo() with id from spoken argument (from lang model)
+		const [statResult, nextTime] =  await getCafeInfo( this.$inputs.cafe.id );
 		console.log("Result: " + statResult.toString() ); // testing
-		if (statResult === true) { // if it's true, tell the user it's open
-			this.tell( this.$inputs.cafe.value + " is currently open.");
+		var message = "";
+		if (statResult === true) { // if it's true, say it's open
+			message += ( this.$inputs.cafe.value + " is currently open."); // tell 'em
+			// then tell the user how soon it will close
+			message += (" However, it will close in " + nextTime);
 		}
-		else { // if it's false, tell the user it's closed
-			this.tell( this.$inputs.cafe.value + " is currently closed.");
+		else { // if statResult is false, say it's closed, and whether it reopens today
+			message += ( this.$inputs.cafe.value + " is currently closed.");
+			console.log("nextTime->" + nextTime); // testing
+			if ( (nextTime !== false) && (nextTime !== "0 minutes") ) { // if nextTime is not false, it will reopen today
+				// thus, tell the user how soon it will reopen
+				message += (" However, it will reopen in " + nextTime);
+			}
+			else { // otherwise, it will be closed for the rest of the day, tell the user
+				message += (" It will remain closed for the remainder of the day.");
+			}
 		}
+		// tells the user the final report (open/closed and for how long)
+		// originally had multiple tells, but that doesn't work, so modified str instead
+		this.tell(message);
 	},
 });
 
@@ -66,12 +81,13 @@ async function getCafeInfo(givenID) {
 	return checkOpen(dayInfo, dayStatus); // feeds dayInfo to checkOpen, which returns boolean
 }
 
-// checkOpen(dayInfo) - takes current day info and checks to see if current time is
-// during an open period (must be better way to do this using api, but it's unclear how)
+// checkOpen(dayInfo, dayStatus) - takes current day info (and status, in case it's
+// closed all day) and checks to see if current time is during an open period 
+// (there must be better way to do this using api, but it's unclear how)
 function checkOpen(dayInfo, dayStatus) { // need to add support for different time zones later
 	// check whether it's closed for the day by comparing status string with "closed"
 	if (dayStatus === "closed") { // if strings match, then
-		return false; // return false, indicating it's currently closed
+		return [false, false]; // return false twice, indicating it's closed today
 	} // if not, just move on
 	var now = new Date(); // grab current date and time
 	var compareStart = new Date(); // grab current date again for easier comparing later
@@ -94,12 +110,32 @@ function checkOpen(dayInfo, dayStatus) { // need to add support for different ti
 			// set compareStart day to given endtime by parsing strings in list
 			compareStart.setHours( parseInt(startTime[0]), parseInt(startTime[1]) , 0)
 			// compare newly minted starttime date object (compareStart) to current time
-			if (now >= compareStart) { // if it's before the starttime, it's open
-				return true; // return true, indicating it's currently open
+			if (now >= compareStart) { // if it's after the starttime, it's open
+				// return true (bc it's open), time diff as string
+				return [true, timeDiff(compareEnd, now)];
 			}
 		}
 	}
-	return false; // return false, indicating it's currently closed
+	return [false, timeDiff(compareStart, now)]; // return false (bc it's closed), diff
+}
+
+// timeDiff(timeA, timeB) - takes two times and compares them, gives str diff
+// that voice assistant can speak
+function timeDiff(timeA, timeB) {
+	if (timeA === undefined) {
+		// message += " and it's closed for the rest of the day.";
+		return false; // indicates it's closed for the day
+	}
+	var message = ""; // string for storing final
+	var diff = (Math.abs(timeA - timeB) / 60000); // diff in minutes
+	if (diff > 60) { // if it's more than an hour, break it down
+		message += ( Math.floor(diff/60).toString() + " hours"); // int div for hour diff
+		message += (" and " + (diff % 60).toString() + " minutes"); // rem div for mins
+	}
+	else { // it's less than an hour, return just mins
+		message += ((diff % 60).toString() + " minutes"); // convert mins to string
+	}
+	return message; // return stringified diff between two times
 }
 
 module.exports.app = app;
